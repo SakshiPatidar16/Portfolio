@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 import express from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose'
+import nodemailer from 'nodemailer'
 import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
@@ -460,6 +461,50 @@ app.put('/api/projects/:id', requireAdmin, (req, res) => {
       return res.status(500).json({ message: 'Could not update project.' })
     }
   })
+})
+
+app.post('/api/contact', async (req, res) => {
+  const { name, email, phone, company, role, location, message } = req.body || {}
+
+  const safeName = typeof name === 'string' ? name.trim() : ''
+  const safeEmail = typeof email === 'string' ? email.trim() : ''
+  const safePhone = typeof phone === 'string' ? phone.trim() : ''
+  const safeCompany = typeof company === 'string' ? company.trim() : ''
+  const safeRole = typeof role === 'string' ? role.trim() : ''
+  const safeLocation = typeof location === 'string' ? location.trim() : ''
+  const safeMessage = typeof message === 'string' ? message.trim() : ''
+
+  if (!safeEmail || !safeMessage) {
+    return res.status(400).json({ message: 'Email and message are required.' })
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(safeEmail)) {
+    return res.status(400).json({ message: 'Invalid email address.' })
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+      }
+    })
+
+    await transporter.sendMail({
+      from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`,
+      to: process.env.GMAIL_USER,
+      replyTo: safeEmail,
+      subject: `Job Opportunity – ${safeName || safeEmail}`,
+      text: `Name: ${safeName || 'N/A'}\nEmail: ${safeEmail}\nPhone: ${safePhone || 'N/A'}\nCompany: ${safeCompany || 'N/A'}\nRole: ${safeRole || 'N/A'}\nLocation/Work Mode: ${safeLocation || 'Not specified'}\n\n${safeMessage}`
+    })
+
+    return res.json({ ok: true })
+  } catch (err) {
+    console.error('Contact email error:', err)
+    return res.status(500).json({ message: 'Failed to send email. Please try again later.' })
+  }
 })
 
 async function start() {

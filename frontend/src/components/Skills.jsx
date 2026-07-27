@@ -26,12 +26,14 @@ export default function Skills({ isLoggedIn }) {
   const [form, setForm] = useState({
     groupTitle: 'Frontend & Backend',
     name: '',
+    newGroupTitle: '',
   })
 
   const resetSkillForm = (shouldCloseModal = true) => {
     setForm({
       groupTitle: 'Frontend & Backend',
       name: '',
+      newGroupTitle: '',
     })
 
     if (shouldCloseModal) {
@@ -86,7 +88,7 @@ export default function Skills({ isLoggedIn }) {
           ...getAdminHeaders(),
         },
         body: JSON.stringify({
-          groupTitle: form.groupTitle,
+          groupTitle: form.groupTitle === '__new__' ? form.newGroupTitle.trim() : form.groupTitle,
           name,
         }),
       })
@@ -169,7 +171,18 @@ export default function Skills({ isLoggedIn }) {
                   {skillGroups.map((group) => (
                     <option key={group.title} value={group.title}>{group.title}</option>
                   ))}
+                  <option value="__new__">+ Add new category…</option>
                 </select>
+
+                {form.groupTitle === '__new__' && (
+                  <input
+                    placeholder="New category name (e.g. DevOps)"
+                    value={form.newGroupTitle}
+                    onChange={(e) => setForm((prev) => ({ ...prev, newGroupTitle: e.target.value }))}
+                    disabled={isSaving}
+                    required
+                  />
+                )}
 
                 <input
                   placeholder="Skill name"

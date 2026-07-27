@@ -977,7 +977,8 @@ h1, h2, h3, h4 {
 }
 
 .contact-field input,
-.contact-field textarea {
+.contact-field textarea,
+.contact-field select {
 	width: 100%;
 	max-width: 100%;
 	display: block;
@@ -992,20 +993,60 @@ h1, h2, h3, h4 {
 }
 
 .contact-field input::placeholder,
-.contact-field textarea::placeholder {
+.contact-field textarea::placeholder,
+.contact-field select::placeholder {
 	color: color-mix(in srgb, var(--muted) 80%, transparent);
 }
 
 .contact-field input:focus,
-.contact-field textarea:focus {
+.contact-field textarea:focus,
+.contact-field select:focus {
 	border-color: color-mix(in srgb, var(--accent) 72%, var(--border));
 	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+}
+
+.contact-required {
+	color: #e53e3e;
+	font-weight: 600;
+}
+
+.contact-optional {
+	font-size: 0.78rem;
+	color: var(--muted, #94a3b8);
+	font-weight: 400;
 }
 
 .contact-submit {
 	justify-self: start;
 	padding-left: 1rem;
 	padding-right: 1rem;
+}
+
+.contact-submit:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.contact-feedback {
+	margin-top: 0.5rem;
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+.contact-feedback--success {
+	color: #16a34a;
+}
+
+.contact-feedback--error {
+	color: #dc2626;
+}
+
+.dark .contact-feedback--success {
+	color: #4ade80;
+}
+
+.dark .contact-feedback--error {
+	color: #f87171;
 }
 
 .dark .contact-shell {
@@ -1026,7 +1067,8 @@ h1, h2, h3, h4 {
 }
 
 .dark .contact-field input,
-.dark .contact-field textarea {
+.dark .contact-field textarea,
+.dark .contact-field select {
 	background: rgba(15, 23, 42, 0.72);
 	border-color: var(--border);
 	color: #e2e8f0;

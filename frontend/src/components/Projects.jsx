@@ -3,7 +3,7 @@ import { getAdminCredentials } from '../utils/auth'
 
 const INITIAL_PROJECT_GROUPS = [
   {
-    title: 'Company Projects',
+    title: 'Company Project',
     kind: 'Company',
     items: [
       {
@@ -70,18 +70,18 @@ export default function Projects({ isLoggedIn }) {
 
   const [openCaseStudy, setOpenCaseStudy] = useState({})
   const [form, setForm] = useState({
-    groupTitle: 'Company Projects',
+    groupTitle: 'Company Project',
     title: '',
     desc: '',
     link: '',
     stack: '',
-    caseStudy: '',
+    caseStudy: ''
   })
   const [projectImageFile, setProjectImageFile] = useState(null)
 
   const resetProjectForm = (shouldCloseModal = true) => {
     setForm({
-      groupTitle: 'Company Projects',
+      groupTitle: 'Company Project',
       title: '',
       desc: '',
       link: '',
@@ -281,7 +281,7 @@ export default function Projects({ isLoggedIn }) {
                   onChange={(e) => setForm((prev) => ({ ...prev, groupTitle: e.target.value }))}
                   disabled={isSaving}
                 >
-                  {projectGroups.map((group) => (
+                  {INITIAL_PROJECT_GROUPS.map((group) => (
                     <option key={group.title} value={group.title}>{group.title}</option>
                   ))}
                 </select>
