@@ -30,7 +30,6 @@ services:
   - type: web
     name: portfolio-frontend
     runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
@@ -41,6 +40,6 @@ services:
 
 databases:
   - name: portfolio-db
+    plan: free
     databaseName: portfolio_db
     user: portfolio_user
-    plan: free
