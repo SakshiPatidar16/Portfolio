@@ -1,7 +1,7 @@
 services:
   - type: web
     name: portfolio-backend
-    env: node
+    runtime: node
     plan: free
     region: oregon
 
@@ -34,14 +34,15 @@ services:
       - key: MAIL_TO
         value: sakshi.ptr16@gmail.com
 
-  - type: static
+  - type: web
     name: portfolio-frontend
+    runtime: static
     plan: free
     region: oregon
 
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishPath: dist
+    staticPublishPath: dist
 
     envVars:
       - key: VITE_API_BASE_URL
@@ -49,6 +50,6 @@ services:
 
 databases:
   - name: portfolio-db
+    plan: free
     databaseName: portfolio_db
     user: portfolio_user
-    plan: free
