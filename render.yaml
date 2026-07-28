@@ -29,7 +29,6 @@ services:
     name: portfolio-frontend
     env: static
     plan: free
-    region: oregon
     buildCommand: cd frontend && npm install && npm run build
     startCommand: npx serve -s frontend/dist -l 3000
     envVars:
