@@ -1,7 +1,7 @@
 export const AUTH_STORAGE_KEY = 'portfolio_admin_auth'
 
-const ADMIN_USERNAME = 'sakshi.ptr7@gmail.com'
-const ADMIN_PASSWORD = 'sakshi@3313'
+const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME || 'sakshi.ptr7@gmail.com'
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'sakshi@3313'
 
 export function getAdminCredentials() {
   return {

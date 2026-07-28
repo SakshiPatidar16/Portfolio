@@ -483,21 +483,32 @@ app.post('/api/contact', async (req, res) => {
     return res.status(400).json({ message: 'Invalid email address.' })
   }
 
+  const gmailUser = process.env.GMAIL_USER || ''
+  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD || ''
+  const mailTo = process.env.MAIL_TO || 'sakshi.ptr16@gmail.com'
+
+  if (!gmailUser || !gmailAppPassword || !mailTo) {
+    return res.status(500).json({ message: 'Email configuration is missing. Please set GMAIL_USER, GMAIL_APP_PASSWORD, and MAIL_TO.' })
+  }
+
   try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
+        user: gmailUser,
+        pass: gmailAppPassword
       }
     })
 
     await transporter.sendMail({
-      from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`,
-      to: process.env.GMAIL_USER,
+      from: `"Portfolio Contact" <${gmailUser}>`,
+      to: mailTo,
       replyTo: safeEmail,
       subject: `Job Opportunity – ${safeName || safeEmail}`,
-      text: `Name: ${safeName || 'N/A'}\nEmail: ${safeEmail}\nPhone: ${safePhone || 'N/A'}\nCompany: ${safeCompany || 'N/A'}\nRole: ${safeRole || 'N/A'}\nLocation/Work Mode: ${safeLocation || 'Not specified'}\n\n${safeMessage}`
+      text: `Name: ${safeName || 'N/A'}\nEmail: ${safeEmail}\nPhone: ${safePhone || 'N/A'}\nCompany: ${safeCompany || 'N/A'}\nRole: ${safeRole || 'N/A'}\nLocation/Work Mode: ${safeLocation || 'Not specified'}\n\n${safeMessage}`,
+      headers: {
+        'X-User-Email': safeEmail
+      }
     })
 
     return res.json({ ok: true })

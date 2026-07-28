@@ -1,5 +1,8 @@
+import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import { defaultProjectGroups } from './seedData.js'
+
+dotenv.config()
 
 const defaultSkillGroups = [
   { title: 'Frontend & Backend', items: ['React.js', 'Node.js', 'Express.js', 'JavaScript', 'HTML & CSS', 'Tailwind CSS'] },
@@ -68,8 +71,12 @@ const profileSchema = new mongoose.Schema(
 
 const ProfileImage = mongoose.models.ProfileImage || mongoose.model('ProfileImage', profileSchema)
 
+export function getMongoUri() {
+  return process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/portfolio_db'
+}
+
 export async function initDb() {
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/portfolio_db'
+  const mongoUri = getMongoUri()
   await mongoose.connect(mongoUri)
 
   const projectCount = await Project.countDocuments()

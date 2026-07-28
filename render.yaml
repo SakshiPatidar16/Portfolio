@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: portfolio-backend
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: FRONTEND_ORIGIN
+        value: https://portfolio-frontend.onrender.com
+      - key: MONGODB_URI
+        fromDatabase:
+          name: portfolio-db
+          property: connectionString
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: MAIL_TO
+        value: sakshi.ptr16@gmail.com
+
+  - type: static
+    name: portfolio-frontend
+    plan: free
+    region: oregon
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://portfolio-backend.onrender.com
+      - key: VITE_API_BASE
+        value: https://portfolio-backend.onrender.com
+      - key: VITE_ADMIN_USERNAME
+        value: sakshi.ptr7@gmail.com
+      - key: VITE_ADMIN_PASSWORD
+        value: sakshi@3313
+
+databases:
+  - name: portfolio-db
+    databaseName: portfolio_db
+    user: portfolio_user
+    plan: free
