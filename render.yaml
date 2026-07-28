@@ -25,12 +25,13 @@ services:
       - key: MAIL_TO
         value: sakshi.ptr16@gmail.com
 
-  - type: static
+  - type: web
     name: portfolio-frontend
+    env: static
     plan: free
     region: oregon
     buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
+    startCommand: npx serve -s frontend/dist -l 3000
     envVars:
       - key: VITE_API_BASE_URL
         value: https://portfolio-backend.onrender.com
