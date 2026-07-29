@@ -73,10 +73,8 @@ export default function Header({ isLoggedIn, onLogout }) {
           ) : (
             <Link
               to="/admin/login"
-              className="nav-link"
               onClick={() => setMenuOpen(false)}
             >
-              Login
             </Link>
           )}
 
