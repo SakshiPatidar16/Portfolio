@@ -328,8 +328,8 @@ router.post('/api/contact', async (req, res) => {
   const safeLocation = safeString(req.body?.location)
   const safeMessage = safeString(req.body?.message)
 
-  if (!safeEmail || !safeMessage) {
-    return res.status(400).json({ message: 'Email and message are required.' })
+  if (!safeEmail) {
+    return res.status(400).json({ message: 'Email is required.' })
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -356,7 +356,7 @@ router.post('/api/contact', async (req, res) => {
       to: mailTo,
       replyTo: safeEmail,
       subject: `Job Opportunity – ${safeName || safeEmail}`,
-      text: `Name: ${safeName || 'N/A'}\nEmail: ${safeEmail}\nPhone: ${safePhone || 'N/A'}\nCompany: ${safeCompany || 'N/A'}\nRole: ${safeRole || 'N/A'}\nLocation/Work Mode: ${safeLocation || 'Not specified'}\n\n${safeMessage}`,
+      text: `Name: ${safeName || 'N/A'}\nEmail: ${safeEmail}\nPhone: ${safePhone || 'N/A'}\nCompany: ${safeCompany || 'N/A'}\nRole: ${safeRole || 'N/A'}\nLocation/Work Mode: ${safeLocation || 'Not specified'}\n\n${safeMessage || 'No message provided.'}`,
       headers: { 'X-User-Email': safeEmail }
     })
 

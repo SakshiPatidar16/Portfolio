@@ -11,10 +11,12 @@ export default function Contact() {
   const [location, setLocation] = useState('')
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState(null) // 'sending' | 'success' | 'error'
+  const [errorMessage, setErrorMessage] = useState('')
 
   const sendMail = async (e) => {
     e.preventDefault()
     setStatus('sending')
+    setErrorMessage('')
     try {
       const res = await fetch(`${API_BASE}/api/contact`, {
         method: 'POST',
@@ -32,6 +34,7 @@ export default function Contact() {
       setLocation('')
       setMessage('')
     } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
       setStatus('error')
     }
   }
@@ -144,7 +147,7 @@ export default function Contact() {
               <p className="contact-feedback contact-feedback--success">Message sent! I'll get back to you soon.</p>
             )}
             {status === 'error' && (
-              <p className="contact-feedback contact-feedback--error">Something went wrong. Please try again.</p>
+              <p className="contact-feedback contact-feedback--error">{errorMessage}</p>
             )}
           </form>
         </div>
@@ -152,4 +155,3 @@ export default function Contact() {
     </section>
   )
 }
-
