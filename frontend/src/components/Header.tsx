@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle'
 
 const LINKS = [
@@ -9,6 +10,7 @@ const LINKS = [
 ]
 
 export default function Header({ isLoggedIn, onLogout }) {
+  const location = useLocation()
   const [active, setActive] = useState(() => window.location.hash || '#intro')
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -21,6 +23,12 @@ export default function Header({ isLoggedIn, onLogout }) {
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
+
+  useEffect(() => {
+    if (!location.hash) {
+      setActive('')
+    }
+  }, [location])
 
   return (
     <header className="site-header">
@@ -62,8 +70,15 @@ export default function Header({ isLoggedIn, onLogout }) {
             >
               Logout
             </button>
-          ) : null}
-
+          ) : (
+            <Link
+              to="/admin/login"
+              className="nav-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              Login
+            </Link>
+          )}
 
           <div className="theme-toggle-wrap">
             <ThemeToggle />

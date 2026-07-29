@@ -38,8 +38,9 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<PortfolioHome isLoggedIn={isLoggedIn} onLogout={handleLogout} />} />
+      <Route path="/login" element={<Navigate to="/admin/login" replace />} />
       <Route
-        path="/login"
+        path="/admin/login"
         element={
           isLoggedIn
             ? <Navigate to="/" replace />
