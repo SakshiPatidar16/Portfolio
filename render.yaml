@@ -17,9 +17,7 @@ services:
       - key: FRONTEND_ORIGIN
         value: https://portfolio-frontend.onrender.com
       - key: MONGODB_URI
-        fromDatabase:
-          name: portfolio-db
-          property: connectionString
+        sync: false
       - key: GMAIL_USER
         sync: false
       - key: GMAIL_APP_PASSWORD
@@ -37,9 +35,3 @@ services:
     envVars:
       - key: VITE_API_BASE_URL
         value: https://portfolio-backend.onrender.com
-
-databases:
-  - name: portfolio-db
-    plan: free
-    databaseName: portfolio_db
-    user: portfolio_user
