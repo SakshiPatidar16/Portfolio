@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
 
 export default function Contact() {
   const [name, setName] = useState('')
