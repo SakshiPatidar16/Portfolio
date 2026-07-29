@@ -5,7 +5,7 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import apiRoutes from './routes/apiRoutes.js'
 import { initDb } from './db.js'
-import { FRONTEND_ORIGIN, PORT } from './config/dbConfig.js'
+import { FRONTEND_ORIGINS, PORT } from './config/dbConfig.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -19,7 +19,19 @@ fs.mkdirSync(profileImagesDir, { recursive: true })
 
 const app = express()
 
-app.use(cors({ origin: FRONTEND_ORIGIN }))
+// Configure CORS to support multiple allowed origins via FRONTEND_ORIGINS env
+const allowedOrigins = Array.isArray(FRONTEND_ORIGINS) ? FRONTEND_ORIGINS : [String(FRONTEND_ORIGINS || '')]
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g., server-to-server or curl)
+      if (!origin) return callback(null, true)
+      if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return callback(null, true)
+      return callback(new Error('CORS policy: This origin is not allowed'))
+    }
+  })
+)
 app.use(express.json())
 app.use('/uploads', express.static(uploadsDir))
 app.use(apiRoutes)
