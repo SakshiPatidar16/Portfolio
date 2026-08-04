@@ -32,6 +32,29 @@ fs.mkdirSync(uploadsDir, { recursive: true })
 fs.mkdirSync(projectImagesDir, { recursive: true })
 fs.mkdirSync(profileImagesDir, { recursive: true })
 
+let emailTransporter = null
+
+function getEmailTransporter() {
+  if (emailTransporter) return emailTransporter
+
+  const gmailUser = process.env.GMAIL_USER || ''
+  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD || ''
+
+  if (!gmailUser || !gmailAppPassword) return null
+
+  emailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: gmailUser, pass: gmailAppPassword },
+    pool: true,
+    secure: false,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+  })
+
+  return emailTransporter
+}
+
 function safeString(value) {
   return typeof value === 'string' ? value.trim() : ''
 }
@@ -337,30 +360,26 @@ router.post('/api/contact', async (req, res) => {
     return res.status(400).json({ message: 'Invalid email address.' })
   }
 
-  const gmailUser = process.env.GMAIL_USER || ''
-  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD || ''
   const mailTo = MAIL_TO
+  const transporter = getEmailTransporter()
 
-  if (!gmailUser || !gmailAppPassword || !mailTo) {
+  if (!transporter || !mailTo) {
     return res.status(500).json({ message: 'Email configuration is missing. Please set GMAIL_USER, GMAIL_APP_PASSWORD, and MAIL_TO.' })
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user: gmailUser, pass: gmailAppPassword }
-    })
-
-    await transporter.sendMail({
-      from: `"Portfolio Contact" <${gmailUser}>`,
+    transporter.sendMail({
+      from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`,
       to: mailTo,
       replyTo: safeEmail,
       subject: `Job Opportunity – ${safeName || safeEmail}`,
       text: `Name: ${safeName || 'N/A'}\nEmail: ${safeEmail}\nPhone: ${safePhone || 'N/A'}\nCompany: ${safeCompany || 'N/A'}\nRole: ${safeRole || 'N/A'}\nLocation/Work Mode: ${safeLocation || 'Not specified'}\n\n${safeMessage || 'No message provided.'}`,
       headers: { 'X-User-Email': safeEmail }
+    }).catch((err) => {
+      console.error('Background contact email error:', err)
     })
 
-    res.json({ ok: true })
+    res.json({ ok: true, queued: true })
   } catch (err) {
     console.error('Contact email error:', err)
     res.status(500).json({ message: 'Failed to send email. Please try again later.' })

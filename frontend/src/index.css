@@ -992,23 +992,51 @@ h1, h2, h3, h4 {
 	transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.contact-field input::placeholder,
-.contact-field textarea::placeholder,
-.contact-field select::placeholder {
-	color: color-mix(in srgb, var(--muted) 80%, transparent);
-}
+	.contact-field--phone .contact-phone-row {
+		display: grid;
+		grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.7fr);
+		gap: 0.75rem;
+		align-items: end;
+	}
 
-.contact-field input:focus,
-.contact-field textarea:focus,
-.contact-field select:focus {
-	border-color: color-mix(in srgb, var(--accent) 72%, var(--border));
-	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
-}
+	.contact-field--phone .contact-phone-row select {
+		max-width: 100%;
+		min-width: 9rem;
+	}
 
-.contact-required {
-	color: #e53e3e;
-	font-weight: 600;
-}
+	.phone-input-wrapper {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.phone-input-wrapper input {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.phone-code {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.62rem 0.75rem;
+		border: 1px solid var(--border);
+		border-radius: 0.65rem;
+		background: color-mix(in srgb, var(--bg) 86%, var(--card));
+		color: var(--text);
+		font-size: 0.92rem;
+		white-space: nowrap;
+	}
+
+	.contact-error {
+		margin-top: 0.4rem;
+		font-size: 0.84rem;
+		color: #dc2626;
+	}
+
+	.contact-required {
+		color: #e53e3e;
+		font-weight: 600;
+	}
 
 .contact-optional {
 	font-size: 0.78rem;

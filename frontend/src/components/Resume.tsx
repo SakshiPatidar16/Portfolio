@@ -31,14 +31,9 @@ export default function Resume({ isLoggedIn }) {
     setError('')
     try {
       const response = await fetch(`${API_BASE_URL}/api/resume`)
-      if (!response.ok) {
-        throw new Error('Could not load resume.')
-      }
 
       const data = await response.json()
       setResume(data.resume || null)
-    } catch (fetchError) {
-      setError(fetchError.message || 'Could not load resume.')
     } finally {
       setIsLoading(false)
     }
@@ -121,7 +116,6 @@ export default function Resume({ isLoggedIn }) {
             </p>
             {error ? <p className="resume-note" role="alert">{error}</p> : null}
             {isLoading ? <p className="resume-note">Loading resume...</p> : null}
-            {!isLoading && !resume ? <p className="resume-note">Resume file is not uploaded yet.</p> : null}
 
           </div>
 
