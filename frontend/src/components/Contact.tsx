@@ -350,13 +350,6 @@ export default function Contact() {
                 </select>
 
                 <div className="phone-input-wrapper">
-                  <span className="phone-code">
-                    +{
-                      PHONE_COUNTRY_OPTIONS.find(
-                        (option) => option.value === phoneCountry
-                      )?.code || '91'
-                    }
-                  </span>
                   <input
                     id="contact-phone"
                     type="tel"

@@ -995,7 +995,7 @@ h1, h2, h3, h4 {
 	.contact-field--phone .contact-phone-row {
 		display: grid;
 		grid-template-columns: minmax(9rem, 1fr) minmax(0, 1.7fr);
-		gap: 0.75rem;
+		gap: 0.40rem;
 		align-items: end;
 	}
 
@@ -1013,6 +1013,25 @@ h1, h2, h3, h4 {
 	.phone-input-wrapper input {
 		flex: 1;
 		min-width: 0;
+	}
+
+	@media (max-width: 640px) {
+		.contact-field--phone .contact-phone-row {
+			grid-template-columns: 1fr;
+		}
+
+		.contact-field--phone .contact-phone-row select {
+			min-width: 0;
+		}
+
+		.phone-input-wrapper {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.phone-input-wrapper input {
+			width: 100%;
+		}
 	}
 
 	.phone-code {
