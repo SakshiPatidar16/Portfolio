@@ -107,6 +107,27 @@ export default function Resume({ isLoggedIn }) {
     ? (resume.urlPath.startsWith('http') ? resume.urlPath : `${API_BASE_URL}${resume.urlPath}`)
     : defaultResumePdf
 
+  const handleDownload = async () => {
+    let filename = resume?.originalName || 'Sakshi_Patidar_Resume.pdf'
+    if (!filename.toLowerCase().endsWith('.pdf')) filename += '.pdf'
+
+    try {
+      const response = await fetch(downloadUrl)
+      const blob = await response.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(blobUrl)
+    } catch {
+      // fallback: open in new tab
+      window.open(downloadUrl, '_blank')
+    }
+  }
+
   return (
     <section id="resume" className="section-block resume-section transition-colors">
       <div className="container">
@@ -122,9 +143,9 @@ export default function Resume({ isLoggedIn }) {
           </div>
 
           <div className="resume-actions">
-            <a href={downloadUrl} download={resume?.originalName || 'Sakshi Patidar.pdf'} className="btn">
+            <button type="button" onClick={handleDownload} className="btn">
               Download Resume
-            </a>
+            </button>
 
             {isLoggedIn ? (
               <form className="resume-admin-form" onSubmit={handleUpload}>
