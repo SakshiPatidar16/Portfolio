@@ -103,7 +103,9 @@ export default function Resume({ isLoggedIn }) {
     }
   }
 
-  const downloadUrl = resume?.urlPath ? `${API_BASE_URL}${resume.urlPath}` : defaultResumePdf
+  const downloadUrl = resume?.urlPath
+    ? (resume.urlPath.startsWith('http') ? resume.urlPath : `${API_BASE_URL}${resume.urlPath}`)
+    : defaultResumePdf
 
   return (
     <section id="resume" className="section-block resume-section transition-colors">

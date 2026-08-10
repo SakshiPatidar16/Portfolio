@@ -360,7 +360,7 @@ export default function Projects({ isLoggedIn }) {
                   <div className="project-media">
                     {p.imageUrl ? (
                       <img
-                        src={`${API_BASE_URL}${p.imageUrl}`}
+                        src={p.imageUrl.startsWith('http') ? p.imageUrl : `${API_BASE_URL}${p.imageUrl}`}
                         alt={`${p.title} preview`}
                         className="project-media-image"
                       />

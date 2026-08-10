@@ -15,3 +15,7 @@ export const FRONTEND_ORIGINS = rawFrontendOrigins
 
 export const FRONTEND_ORIGIN = FRONTEND_ORIGINS[0]
 export const MAIL_TO = process.env.MAIL_TO || 'sakshi.ptr16@gmail.com'
+
+export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || ''
+export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || ''
+export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || ''

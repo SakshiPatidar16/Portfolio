@@ -19,6 +19,7 @@ const projectSchema = new mongoose.Schema(
     link: { type: String, default: '#', trim: true },
     imageUrl: { type: String, default: '', trim: true },
     imageStoredName: { type: String, default: '', trim: true },
+    cloudinaryPublicId: { type: String, default: '', trim: true },
     stack: [{ type: String, trim: true }],
     caseStudy: [{ type: String, trim: true }]
   },
@@ -47,7 +48,8 @@ const resumeSchema = new mongoose.Schema(
     storedName: { type: String, required: true, trim: true },
     mimeType: { type: String, required: true, trim: true },
     size: { type: Number, required: true },
-    urlPath: { type: String, required: true, trim: true }
+    urlPath: { type: String, required: true, trim: true },
+    cloudinaryPublicId: { type: String, default: '', trim: true }
   },
   {
     timestamps: true
@@ -62,7 +64,8 @@ const profileSchema = new mongoose.Schema(
     storedName: { type: String, required: true, trim: true },
     mimeType: { type: String, required: true, trim: true },
     size: { type: Number, required: true },
-    urlPath: { type: String, required: true, trim: true }
+    urlPath: { type: String, required: true, trim: true },
+    cloudinaryPublicId: { type: String, default: '', trim: true }
   },
   {
     timestamps: true
@@ -157,6 +160,7 @@ export async function addProject(projectInput) {
     link: projectInput.link || '#',
     imageUrl: projectInput.imageUrl || '',
     imageStoredName: projectInput.imageStoredName || '',
+    cloudinaryPublicId: projectInput.cloudinaryPublicId || '',
     stack: projectInput.stack,
     caseStudy: projectInput.caseStudy
   })
@@ -180,6 +184,7 @@ export async function updateProject(projectId, projectInput) {
       link: projectInput.link || '#',
       imageUrl: projectInput.imageUrl || existing.imageUrl || '',
       imageStoredName: projectInput.imageStoredName || existing.imageStoredName || '',
+      cloudinaryPublicId: projectInput.cloudinaryPublicId || existing.cloudinaryPublicId || '',
       stack: projectInput.stack,
       caseStudy: projectInput.caseStudy
     }
@@ -187,7 +192,8 @@ export async function updateProject(projectId, projectInput) {
 
   return {
     id: existing._id.toString(),
-    previousImageStoredName: existing.imageStoredName || ''
+    previousImageStoredName: existing.imageStoredName || '',
+    previousCloudinaryPublicId: existing.cloudinaryPublicId || ''
   }
 }
 
@@ -199,7 +205,8 @@ export async function deleteProject(projectId) {
 
   return {
     id: deleted._id.toString(),
-    imageStoredName: deleted.imageStoredName || ''
+    imageStoredName: deleted.imageStoredName || '',
+    cloudinaryPublicId: deleted.cloudinaryPublicId || ''
   }
 }
 
@@ -249,6 +256,7 @@ export async function getResume() {
     mimeType: resume.mimeType,
     size: resume.size,
     urlPath: resume.urlPath,
+    cloudinaryPublicId: resume.cloudinaryPublicId || '',
     updatedAt: resume.updatedAt
   }
 }
@@ -261,7 +269,8 @@ export async function upsertResume(resumeInput) {
       storedName: resumeInput.storedName,
       mimeType: resumeInput.mimeType,
       size: resumeInput.size,
-      urlPath: resumeInput.urlPath
+      urlPath: resumeInput.urlPath,
+      cloudinaryPublicId: resumeInput.cloudinaryPublicId || ''
     },
     {
       new: true,
@@ -277,6 +286,7 @@ export async function upsertResume(resumeInput) {
     mimeType: resume.mimeType,
     size: resume.size,
     urlPath: resume.urlPath,
+    cloudinaryPublicId: resume.cloudinaryPublicId || '',
     updatedAt: resume.updatedAt
   }
 }
@@ -294,6 +304,7 @@ export async function deleteResume() {
     mimeType: existing.mimeType,
     size: existing.size,
     urlPath: existing.urlPath,
+    cloudinaryPublicId: existing.cloudinaryPublicId || '',
     updatedAt: existing.updatedAt
   }
 }
@@ -309,6 +320,7 @@ export async function getProfileImage() {
     mimeType: profile.mimeType,
     size: profile.size,
     urlPath: profile.urlPath,
+    cloudinaryPublicId: profile.cloudinaryPublicId || '',
     updatedAt: profile.updatedAt
   }
 }
@@ -321,7 +333,8 @@ export async function upsertProfileImage(profileInput) {
       storedName: profileInput.storedName,
       mimeType: profileInput.mimeType,
       size: profileInput.size,
-      urlPath: profileInput.urlPath
+      urlPath: profileInput.urlPath,
+      cloudinaryPublicId: profileInput.cloudinaryPublicId || ''
     },
     {
       new: true,
@@ -337,6 +350,7 @@ export async function upsertProfileImage(profileInput) {
     mimeType: profile.mimeType,
     size: profile.size,
     urlPath: profile.urlPath,
+    cloudinaryPublicId: profile.cloudinaryPublicId || '',
     updatedAt: profile.updatedAt
   }
 }
@@ -354,6 +368,7 @@ export async function deleteProfileImage() {
     mimeType: existing.mimeType,
     size: existing.size,
     urlPath: existing.urlPath,
+    cloudinaryPublicId: existing.cloudinaryPublicId || '',
     updatedAt: existing.updatedAt
   }
 }

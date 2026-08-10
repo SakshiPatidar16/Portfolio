@@ -24,6 +24,12 @@ services:
         sync: false
       - key: MAIL_TO
         value: sakshi.ptr16@gmail.com
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
 
   - type: web
     name: portfolio-frontend

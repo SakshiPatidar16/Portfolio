@@ -134,7 +134,7 @@ export default function Intro({ isLoggedIn }) {
             <div className="intro-avatar-placeholder">
               {profileImage?.urlPath ? (
                 <img
-                  src={`${API_BASE_URL}${profileImage.urlPath}`}
+                  src={profileImage.urlPath.startsWith('http') ? profileImage.urlPath : `${API_BASE_URL}${profileImage.urlPath}`}
                   alt="Profile"
                   className="intro-avatar-image"
                 />

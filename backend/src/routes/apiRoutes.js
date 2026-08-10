@@ -1,8 +1,7 @@
 import { Router } from 'express'
 import multer from 'multer'
-import path from 'path'
-import fs from 'fs'
-import { fileURLToPath } from 'url'
+import { v2 as cloudinary } from 'cloudinary'
+import { CloudinaryStorage } from 'multer-storage-cloudinary'
 import nodemailer from 'nodemailer'
 import {
   addSkill,
@@ -20,17 +19,15 @@ import {
   upsertResume
 } from '../db.js'
 import { requireAdmin } from '../middleware/adminAuth.js'
-import { MAIL_TO } from '../config/dbConfig.js'
+import { MAIL_TO, CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '../config/dbConfig.js'
+
+cloudinary.config({
+  cloud_name: CLOUDINARY_CLOUD_NAME,
+  api_key: CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET,
+})
 
 const router = Router()
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const uploadsDir = path.join(__dirname, '..', '..', 'uploads')
-const projectImagesDir = path.join(uploadsDir, 'projects')
-const profileImagesDir = path.join(uploadsDir, 'profile')
-
-fs.mkdirSync(uploadsDir, { recursive: true })
-fs.mkdirSync(projectImagesDir, { recursive: true })
-fs.mkdirSync(profileImagesDir, { recursive: true })
 
 let emailTransporter = null
 
@@ -69,49 +66,55 @@ function safeJsonArray(value) {
   }
 }
 
-function fileStorage(destinationDir, defaultExt) {
-  return multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, destinationDir),
-    filename: (_req, file, cb) => {
-      const ext = path.extname(file.originalname || '').toLowerCase() || defaultExt
-      const safeBase = path
-        .basename(file.originalname || 'upload', ext)
-        .replace(/[^a-zA-Z0-9_-]/g, '-')
-        .slice(0, 80) || 'upload'
-      cb(null, `${Date.now()}-${safeBase}${ext}`)
-    }
-  })
+function fileExtension(filename) {
+  const idx = (filename || '').lastIndexOf('.')
+  return idx >= 0 ? filename.slice(idx).toLowerCase() : ''
 }
 
+const resumeStorage = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: 'portfolio/resumes', resource_type: 'raw' },
+})
+
+const projectImageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: 'portfolio/projects', resource_type: 'image' },
+})
+
+const profileImageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: 'portfolio/profile', resource_type: 'image' },
+})
+
 const resumeUpload = multer({
-  storage: fileStorage(uploadsDir, '.pdf'),
+  storage: resumeStorage,
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const ext = path.extname(file.originalname || '').toLowerCase()
+    const ext = fileExtension(file.originalname)
     if (file.mimetype === 'application/pdf' && ext === '.pdf') return cb(null, true)
     cb(new Error('Only PDF files are allowed.'))
   }
 })
 
 const projectImageUpload = multer({
-  storage: fileStorage(projectImagesDir, '.jpg'),
+  storage: projectImageStorage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowedMime = ['image/png', 'image/jpeg', 'image/webp']
     const allowedExt = ['.png', '.jpg', '.jpeg', '.webp']
-    const ext = path.extname(file.originalname || '').toLowerCase()
+    const ext = fileExtension(file.originalname)
     if (allowedMime.includes(file.mimetype) && allowedExt.includes(ext)) return cb(null, true)
     cb(new Error('Only image files (PNG, JPG, JPEG, WEBP) are allowed.'))
   }
 })
 
 const profileImageUpload = multer({
-  storage: fileStorage(profileImagesDir, '.jpg'),
+  storage: profileImageStorage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowedMime = ['image/png', 'image/jpeg', 'image/webp']
     const allowedExt = ['.png', '.jpg', '.jpeg', '.webp']
-    const ext = path.extname(file.originalname || '').toLowerCase()
+    const ext = fileExtension(file.originalname)
     if (allowedMime.includes(file.mimetype) && allowedExt.includes(ext)) return cb(null, true)
     cb(new Error('Only image files (PNG, JPG, JPEG, WEBP) are allowed.'))
   }
@@ -129,8 +132,9 @@ function createProjectData(body, file) {
     desc,
     link,
     groupKind: groupTitle === 'Company Projects' ? 'Company' : 'Self',
-    imageUrl: file ? `/uploads/projects/${file.filename}` : '',
+    imageUrl: file ? file.path : '',
     imageStoredName: file ? file.filename : '',
+    cloudinaryPublicId: file ? file.filename : '',
     stack: safeJsonArray(body?.stack).length ? safeJsonArray(body?.stack) : ['React.js'],
     caseStudy: safeJsonArray(body?.caseStudy).length ? safeJsonArray(body?.caseStudy) : ['Project details will be added soon.']
   }
@@ -162,18 +166,18 @@ router.post('/api/profile-image', requireAdmin, (req, res) => {
         storedName: req.file.filename,
         mimeType: req.file.mimetype,
         size: req.file.size,
-        urlPath: `/uploads/profile/${req.file.filename}`
+        urlPath: req.file.path,
+        cloudinaryPublicId: req.file.filename
       })
 
-      if (existing && existing.storedName && existing.storedName !== req.file.filename) {
-        const oldPath = path.join(profileImagesDir, existing.storedName)
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath)
+      if (existing?.cloudinaryPublicId && existing.cloudinaryPublicId !== req.file.filename) {
+        cloudinary.uploader.destroy(existing.cloudinaryPublicId).catch(console.error)
       }
 
       res.status(201).json({ profileImage: saved })
-    } catch (_saveError) {
-      const newPath = path.join(profileImagesDir, req.file.filename)
-      if (fs.existsSync(newPath)) fs.unlinkSync(newPath)
+    } catch (saveError) {
+      console.error('Profile image save error:', saveError)
+      cloudinary.uploader.destroy(req.file.filename).catch(console.error)
       res.status(500).json({ message: 'Could not save profile image.' })
     }
   })
@@ -183,8 +187,9 @@ router.delete('/api/profile-image', requireAdmin, async (_req, res) => {
   const removed = await deleteProfileImage()
   if (!removed) return res.status(404).json({ message: 'No profile image found.' })
 
-  const imagePath = path.join(profileImagesDir, removed.storedName)
-  if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath)
+  if (removed.cloudinaryPublicId) {
+    cloudinary.uploader.destroy(removed.cloudinaryPublicId).catch(console.error)
+  }
 
   res.status(204).send()
 })
@@ -201,18 +206,18 @@ router.post('/api/resume', requireAdmin, (req, res) => {
         storedName: req.file.filename,
         mimeType: req.file.mimetype,
         size: req.file.size,
-        urlPath: `/uploads/${req.file.filename}`
+        urlPath: req.file.path,
+        cloudinaryPublicId: req.file.filename
       })
 
-      if (existing && existing.storedName && existing.storedName !== req.file.filename) {
-        const oldPath = path.join(uploadsDir, existing.storedName)
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath)
+      if (existing?.cloudinaryPublicId && existing.cloudinaryPublicId !== req.file.filename) {
+        cloudinary.uploader.destroy(existing.cloudinaryPublicId, { resource_type: 'raw' }).catch(console.error)
       }
 
       res.status(201).json({ resume: saved })
-    } catch (_saveError) {
-      const newPath = path.join(uploadsDir, req.file.filename)
-      if (fs.existsSync(newPath)) fs.unlinkSync(newPath)
+    } catch (saveError) {
+      console.error('Resume save error:', saveError)
+      cloudinary.uploader.destroy(req.file.filename, { resource_type: 'raw' }).catch(console.error)
       res.status(500).json({ message: 'Could not save resume.' })
     }
   })
@@ -222,8 +227,9 @@ router.delete('/api/resume', requireAdmin, async (_req, res) => {
   const removed = await deleteResume()
   if (!removed) return res.status(404).json({ message: 'No resume found.' })
 
-  const resumePath = path.join(uploadsDir, removed.storedName)
-  if (fs.existsSync(resumePath)) fs.unlinkSync(resumePath)
+  if (removed.cloudinaryPublicId) {
+    cloudinary.uploader.destroy(removed.cloudinaryPublicId, { resource_type: 'raw' }).catch(console.error)
+  }
 
   res.status(204).send()
 })
@@ -260,21 +266,16 @@ router.post('/api/projects', requireAdmin, (req, res) => {
 
     const projectData = createProjectData(req.body, req.file)
     if (!projectData.groupTitle || !projectData.title || !projectData.desc) {
-      if (req.file) {
-        const newPath = path.join(projectImagesDir, req.file.filename)
-        if (fs.existsSync(newPath)) fs.unlinkSync(newPath)
-      }
+      if (req.file) cloudinary.uploader.destroy(req.file.filename).catch(console.error)
       return res.status(400).json({ message: 'groupTitle, title and desc are required.' })
     }
 
     try {
       const projectId = await addProject(projectData)
       res.status(201).json({ id: projectId })
-    } catch (_saveError) {
-      if (req.file) {
-        const newPath = path.join(projectImagesDir, req.file.filename)
-        if (fs.existsSync(newPath)) fs.unlinkSync(newPath)
-      }
+    } catch (saveError) {
+      console.error('Project save error:', saveError)
+      if (req.file) cloudinary.uploader.destroy(req.file.filename).catch(console.error)
       res.status(500).json({ message: 'Could not save project.' })
     }
   })
@@ -286,9 +287,8 @@ router.delete('/api/projects/:id', requireAdmin, async (req, res) => {
   const removed = await deleteProject(projectId)
   if (!removed) return res.status(404).json({ message: 'Project not found.' })
 
-  if (removed.imageStoredName) {
-    const imagePath = path.join(projectImagesDir, removed.imageStoredName)
-    if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath)
+  if (removed.cloudinaryPublicId) {
+    cloudinary.uploader.destroy(removed.cloudinaryPublicId).catch(console.error)
   }
 
   res.status(204).send()
@@ -300,43 +300,31 @@ router.put('/api/projects/:id', requireAdmin, (req, res) => {
 
     const projectId = safeString(req.params.id)
     if (!projectId) {
-      if (req.file) {
-        const newPath = path.join(projectImagesDir, req.file.filename)
-        if (fs.existsSync(newPath)) fs.unlinkSync(newPath)
-      }
+      if (req.file) cloudinary.uploader.destroy(req.file.filename).catch(console.error)
       return res.status(400).json({ message: 'Invalid project id.' })
     }
 
     const projectData = createProjectData(req.body, req.file)
     if (!projectData.groupTitle || !projectData.title || !projectData.desc) {
-      if (req.file) {
-        const newPath = path.join(projectImagesDir, req.file.filename)
-        if (fs.existsSync(newPath)) fs.unlinkSync(newPath)
-      }
+      if (req.file) cloudinary.uploader.destroy(req.file.filename).catch(console.error)
       return res.status(400).json({ message: 'groupTitle, title and desc are required.' })
     }
 
     try {
       const updated = await updateProject(projectId, projectData)
       if (!updated) {
-        if (req.file) {
-          const newPath = path.join(projectImagesDir, req.file.filename)
-          if (fs.existsSync(newPath)) fs.unlinkSync(newPath)
-        }
+        if (req.file) cloudinary.uploader.destroy(req.file.filename).catch(console.error)
         return res.status(404).json({ message: 'Project not found.' })
       }
 
-      if (req.file && updated.previousImageStoredName && updated.previousImageStoredName !== req.file.filename) {
-        const oldPath = path.join(projectImagesDir, updated.previousImageStoredName)
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath)
+      if (req.file && updated.previousCloudinaryPublicId && updated.previousCloudinaryPublicId !== req.file.filename) {
+        cloudinary.uploader.destroy(updated.previousCloudinaryPublicId).catch(console.error)
       }
 
       res.status(200).json({ id: updated.id })
-    } catch (_saveError) {
-      if (req.file) {
-        const newPath = path.join(projectImagesDir, req.file.filename)
-        if (fs.existsSync(newPath)) fs.unlinkSync(newPath)
-      }
+    } catch (saveError) {
+      console.error('Project update error:', saveError)
+      if (req.file) cloudinary.uploader.destroy(req.file.filename).catch(console.error)
       res.status(500).json({ message: 'Could not update project.' })
     }
   })
